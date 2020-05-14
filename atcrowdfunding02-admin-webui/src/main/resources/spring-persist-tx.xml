@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.3.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.3.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.3.xsd">
+
+	<!-- 配置自动扫描包:为了扫描业务层到IOC容器 -->
+	<context:component-scan base-package="com.edu.crowd.service"></context:component-scan>
+	
+	<!-- 配置事务管理器 -->
+	<bean id="txManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<!-- 装配数据源spring-persist-mybatis.xml的dataSource -->
+		<property name="dataSource" ref="dataSource"></property>
+	</bean>
+	
+	<!-- 配置事务切面 -->
+	<aop:config>
+		<!-- * *..*Service.*(..) 第一个*代表public String  *..代表任意包 *ServiceImpl代表*serviceImpl类 *(..)代表任意方法，方法参数任意 -->
+		<aop:pointcut expression="execution(* *..*ServiceImpl.*(..))" id="txPointcut"/>
+		
+		<!-- 将切入点与事务通知关联 -->
+		<aop:advisor advice-ref="txAdvice" pointcut-ref="txPointcut"/>
+	</aop:config>
+	<!-- 配置事务的通知 -->
+	<tx:advice id="txAdvice" transaction-manager="txManager">
+		<!-- 配置事务属性 -->
+		<tx:attributes>
+			<!-- 查询的方法，配置只读属性，让数据库知道这是一个查询操作，可以进行相关的优化 -->
+			<tx:method name="get*" read-only="true"/>
+			<tx:method name="find*" read-only="true"/>
+			<tx:method name="count*" read-only="true"/>
+			<tx:method name="query*" read-only="true"/>
+			<tx:method name="select*" read-only="true"/>
+			
+			<!-- 设置增删改方法，需要配置事务的传播行为及回滚 -->
+			<!-- 
+				propagation属性
+					默认值REQUIRED：表示当前方法必须工作在事务中，当前线程上没有与i经开启的事务，则自己开启新事物，如果有了则使用已有的事务
+					REQUIRES_NEW:建议使用，无论是否存在事务，皆开启事务，不会受到其他事务回滚的影响
+			 -->
+			 <!-- 
+			 	rollback-for属性：表示配置事务针对什么样的事情进行回滚
+			 		默认运行时异常回滚
+			 		建议任意异常回滚（编译异常与运行时异常）
+			  -->
+			<tx:method name="save*" propagation="REQUIRES_NEW" rollback-for="java.lang.Exception"/>
+			<tx:method name="update*" propagation="REQUIRES_NEW" rollback-for="java.lang.Exception"/>
+			<tx:method name="remove*" propagation="REQUIRES_NEW" rollback-for="java.lang.Exception"/>
+			<tx:method name="batch*" propagation="REQUIRES_NEW" rollback-for="java.lang.Exception"/>
+			<tx:method name="insert*" propagation="REQUIRES_NEW" rollback-for="java.lang.Exception"/>
+			
+		</tx:attributes>
+	
+	</tx:advice>
+	
+	
+</beans>

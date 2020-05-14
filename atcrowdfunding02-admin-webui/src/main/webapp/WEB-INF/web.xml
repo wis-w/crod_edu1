@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns="http://java.sun.com/xml/ns/javaee"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
+	version="2.5">
+	
+	<!-- IOC容器监听 -->
+	<!-- needed for ContextLoaderListener -->
+	<context-param>
+		<param-name>contextConfigLocation</param-name>
+		<param-value>classpath:spring-persist-*.xml</param-value>
+	</context-param>
+
+	<!-- Bootstraps the root web application context before servlet initialization -->
+	<listener>
+		<listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+	</listener>
+	
+	<filter>
+		<filter-name>CharacterEncodingFilter</filter-name>
+		<filter-class>org.springframework.web.filter.CharacterEncodingFilter</filter-class>
+		<!-- 设置字符集 -->
+		<init-param>
+			<param-name>encoding</param-name>
+			<param-value>UTF-8</param-value>
+		</init-param>
+		<!-- 强制请求设置设置字符集 -->
+		<init-param>
+			<param-name>forceRequestEncoding</param-name>
+			<param-value>true</param-value>
+		</init-param>
+		<!-- 强制相应设置设置字符集 -->
+		<init-param>
+			<param-name>forceResponseEncoding</param-name>
+			<param-value>true</param-value>
+		</init-param>
+	</filter>
+	<!-- 必须最优先加载 -->
+	<filter-mapping>
+		<filter-name>CharacterEncodingFilter</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
+	
+	<!-- The front controller of this Spring Web application, responsible for handling all application requests -->
+	<servlet>
+		<servlet-name>springDispatcherServlet</servlet-name>
+		<servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+		<init-param>
+			<param-name>contextConfigLocation</param-name>
+			<param-value>classpath:spring-web-mvc.xml</param-value>
+		</init-param>
+		<!-- 默认的生命周期中，创建对象是在第一次接收到请求时 -->
+		<!-- DispatcherServlet创建时会有大量的框架初始化工作，不适合在第一次请求时使用 -->
+		<!-- 设置load-on-startup就是为了在启动时就创建，在listen与filter后进行创建 -->
+		<load-on-startup>1</load-on-startup>
+	</servlet>
+
+	<!-- Map all requests to the DispatcherServlet for handling -->
+	<servlet-mapping>
+		<servlet-name>springDispatcherServlet</servlet-name>
+		<!-- url-pattern配置/：代表拦截所有请求 -->
+		<!-- <url-pattern>/</url-pattern> -->
+		<!-- url-pattern配置扩展名 
+			优点：静态资源完全不通过springMVC，不需要特殊处理 也可以使用伪静态的效果
+				伪静态：1、给黑客入侵增加困难  2、利于SEO优化(搜索引擎搜索靠前)
+			缺点：不符合RESTFul风格
+		-->
+		<url-pattern>*.html</url-pattern>
+		<!-- 配置json：如果一个Ajax请求扩展名时html，但实际上返回的时json数据，两者就无法匹配，会出现406错误 -->
+		<url-pattern>*.json</url-pattern>
+	</servlet-mapping>
+	
+</web-app>
