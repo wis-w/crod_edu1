@@ -14,7 +14,7 @@
 
 	<properties>
 		<!-- 声明属性，   对 Spring 的版本进行统一管理 -->
-		<edu.spring.version>4.3.20.RELEASE</edu.spring.version>
+		<edu.spring.version>5.3.18</edu.spring.version>
 		<!-- 声明属性，对 SpringSecurity 的版本进行统一管理 -->
 		<edu.spring.security.version>4.2.10.RELEASE</edu.spring.security.version>
 	</properties>
